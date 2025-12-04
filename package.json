@@ -1,12 +1,12 @@
 {
-  "name": "arundaya-socket-server",
+  "name": "arundaya-socket-server2",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "socket.io": "^4.8.1"
   }
 }
-
