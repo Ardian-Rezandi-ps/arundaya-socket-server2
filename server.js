@@ -1,6 +1,6 @@
-import express from "express";
-import http from "http";
-import { Server } from "socket.io";
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
@@ -15,12 +15,12 @@ const io = new Server(server, {
   },
 });
 
-// Endpoint HTTP biasa, biar bisa dicek di browser
+// endpoint HTTP untuk tes di browser
 app.get("/", (req, res) => {
-  res.send("Arundaya Socket Server is running ✅");
+  res.send("Arundaya Socket Server2 is running ✅");
 });
 
-// Event Socket.IO
+// event Socket.IO
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
 
