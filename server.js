@@ -24,7 +24,10 @@ io.on("connection", (socket) => {
   socket.on("joystick-move", (data) => {
     io.emit("joystick-move", data);
   });
-
+	socket.on("controller-chat", (data) => {
+    console.log("controller-chat", data);
+    io.emit("controller-chat", data);   // broadcast ke semua client (web + Unity)
+  });
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
