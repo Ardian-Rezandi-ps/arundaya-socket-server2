@@ -5,6 +5,8 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
+app.use(express.json());
+
 const PORT = process.env.PORT || 3000;
 
 const io = new Server(server, {
@@ -24,10 +26,24 @@ io.on("connection", (socket) => {
   socket.on("joystick-move", (data) => {
     io.emit("joystick-move", data);
   });
-	socket.on("controller-chat", (data) => {
+
+  socket.on("controller-chat", (data) => {
     console.log("controller-chat", data);
-    io.emit("controller-chat", data);   // broadcast ke semua client (web + Unity)
+    io.emit("controller-chat", data);
   });
+
+  socket.on("player-input", (data = {}) => {
+    const payload = {
+      interact: data.interact ?? "",
+      idPlayer: data.idPlayer ?? "",
+      note: data.note ?? "",
+      coin: Number.isInteger(data.coin) ? data.coin : 0,
+    };
+
+    console.log("player-input", payload);
+    io.emit("player-input", payload);
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
