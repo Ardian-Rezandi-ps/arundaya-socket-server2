@@ -7,13 +7,16 @@ const server = http.createServer(app);
 
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
+const HOST = process.env.HOST || "0.0.0.0";
 
 const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
+  transports: ["websocket", "polling"],
+  allowEIO3: true,
 });
 
 app.get("/", (req, res) => {
@@ -21,10 +24,11 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+  console.log("Client connected:", socket.id, "transport:", socket.conn.transport.name);
 
   socket.on("joystick-move", (data) => {
-    io.emit("joystick-move", data);
+    console.log("forwarding joystick-move", socket.id, data);
+    socket.broadcast.emit("joystick-move", data);
   });
 
   socket.on("controller-chat", (data) => {
@@ -49,6 +53,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+server.listen(PORT, HOST, () => {
+  console.log("Server running on http://" + HOST + ":" + PORT);
 });
