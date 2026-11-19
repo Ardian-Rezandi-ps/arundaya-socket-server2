@@ -156,6 +156,8 @@ io.on("connection", (socket) => {
     }
 
     const movement = isObject(data) ? { ...data, idPlayer: player.idPlayer } : { idPlayer: player.idPlayer };
+    const otherConnectedClients = Math.max(0, io.sockets.sockets.size - 1);
+    console.log("forwarding joystick-move", socket.id, movement, "otherConnectedClients:", otherConnectedClients);
     socket.broadcast.emit("joystick-move", movement);
     if (typeof acknowledge === "function") {
       acknowledge({
@@ -163,7 +165,7 @@ io.on("connection", (socket) => {
         idPlayer: player.idPlayer,
         x: movement.x,
         y: movement.y,
-        otherConnectedClients: Math.max(0, io.sockets.sockets.size - 1),
+        otherConnectedClients,
       });
     }
   });
