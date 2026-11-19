@@ -38,6 +38,15 @@ function reportPlayerError(socket, code, message) {
   socket.emit("player-error", { code, message });
 }
 
+function getPlayersList() {
+  return Array.from(players.values(), ({ idPlayer, x, y, rotation }) => ({
+    idPlayer,
+    x,
+    y,
+    rotation,
+  }));
+}
+
 function registerPlayer(socket, idPlayer, data = {}, sendPlayersList = false) {
   const currentId = socket.data.idPlayer;
   if (currentId && currentId !== idPlayer) {
@@ -70,15 +79,7 @@ function registerPlayer(socket, idPlayer, data = {}, sendPlayersList = false) {
   }
 
   if (sendPlayersList) {
-    socket.emit(
-      "players-list",
-      Array.from(players.values(), ({ idPlayer: playerId, x, y, rotation }) => ({
-        idPlayer: playerId,
-        x,
-        y,
-        rotation,
-      })),
-    );
+    socket.emit("players-list", getPlayersList());
   }
 
   return players.get(idPlayer);
@@ -105,6 +106,10 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id, "transport:", socket.conn.transport.name);
+
+  socket.on("players-request", () => {
+    socket.emit("players-list", getPlayersList());
+  });
 
   socket.on("player-join", (data = {}) => {
     const idPlayer = getPlayerId(data);
