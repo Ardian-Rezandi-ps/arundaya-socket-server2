@@ -146,15 +146,26 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("player-moved", movement);
   });
 
-  socket.on("joystick-move", (data) => {
+  socket.on("joystick-move", (data, acknowledge) => {
     const player = getSocketPlayer(socket, data);
     if (!player) {
+      if (typeof acknowledge === "function") {
+        acknowledge({ ok: false, message: "Player is not registered on this socket." });
+      }
       return;
     }
 
     const movement = isObject(data) ? { ...data, idPlayer: player.idPlayer } : { idPlayer: player.idPlayer };
-    console.log("forwarding joystick-move", socket.id, movement);
     socket.broadcast.emit("joystick-move", movement);
+    if (typeof acknowledge === "function") {
+      acknowledge({
+        ok: true,
+        idPlayer: player.idPlayer,
+        x: movement.x,
+        y: movement.y,
+        otherConnectedClients: Math.max(0, io.sockets.sockets.size - 1),
+      });
+    }
   });
 
   socket.on("controller-chat", (data) => {
