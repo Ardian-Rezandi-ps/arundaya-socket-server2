@@ -66,6 +66,7 @@ function registerPlayer(socket, idPlayer, data = {}, sendPlayersList = false) {
       x: Number.isFinite(data.x) ? data.x : 0,
       y: Number.isFinite(data.y) ? data.y : 0,
       rotation: Number.isFinite(data.rotation) ? data.rotation : 0,
+      minigame: "none",
       socketId: socket.id,
     };
     players.set(idPlayer, player);
@@ -118,7 +119,32 @@ io.on("connection", (socket) => {
       return;
     }
 
-    registerPlayer(socket, idPlayer, data, true);
+    const player = registerPlayer(socket, idPlayer, data, true);
+    if (!player) return;
+
+    socket.emit("player-minigame", {
+      idPlayer: player.idPlayer,
+      minigame: player.minigame,
+    });
+  });
+
+  socket.on("player-minigame", (data = {}) => {
+    if (!isObject(data) || typeof data.minigame !== "string" || data.minigame.trim().length === 0 || data.minigame.length > 128) {
+      reportPlayerError(socket, "INVALID_MINIGAME", "Minigame updates require a name between 1 and 128 characters.");
+      return;
+    }
+
+    const idPlayer = getPlayerId(data);
+    const player = players.get(idPlayer);
+    if (!player) {
+      reportPlayerError(socket, "PLAYER_NOT_REGISTERED", "The minigame update references a player that is not connected.");
+      return;
+    }
+
+    player.minigame = data.minigame.trim();
+    const payload = { idPlayer: player.idPlayer, minigame: player.minigame };
+    console.log("player-minigame", payload);
+    io.to(player.socketId).emit("player-minigame", payload);
   });
 
   socket.on("player-move", (data = {}) => {
